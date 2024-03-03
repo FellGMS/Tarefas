@@ -9,7 +9,8 @@ class TaskController extends Controller
     private static $tasks = [
         ['id' => 1, 'name' => 'Aprender Laravel'],
         ['id' => 2, 'name' => 'Construir um CRUD'],
-        // Mais tarefas aqui...
+        ['id' => 3, 'name' => 'Subir o projeto no Git'],
+
     ];
 
     public function index()
