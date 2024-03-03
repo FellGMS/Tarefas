@@ -21,10 +21,17 @@ class TaskController extends Controller
     ];
 
 
+    //public function index()
+    //{
+        //return response()->json(self::$tasks);
+    //}
+
+    //Alteração no método index no TaskController para retornar a view tasks com os dados das tarefas.
     public function index()
     {
-        return response()->json(self::$tasks);
+        return view('tasks', ['tasks' => self::$tasks]);
     }
+
 
     public function store(Request $request)
     {
