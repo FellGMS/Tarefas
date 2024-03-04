@@ -17,12 +17,16 @@
     </div>
 
     <!-- Scripts necessários para o Bootstrap -->
-    <!-- jQuery primeiro, depois Popper.js, depois Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <!-- jQuery versão completa, necessário para funcionalidades do Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+    <!-- Popper.js, necessário para tooltips e popovers do Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.9.1/dist/umd/popper.min.js"></script>
+
+    <!-- JavaScript do Bootstrap -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <!-- Scripts adicionais da página -->
-    @yield('scripts')
+        @yield('scripts')
 </body>
 </html>
