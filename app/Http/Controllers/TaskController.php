@@ -1,12 +1,13 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class TaskController extends Controller
 {
+    // Inicialização do array de tarefas estático.
     private static $tasks = [
         ['id' => 1, 'Tarefa' => 'Aprender Laravel'],
         ['id' => 2, 'Tarefa' => 'Construir um CRUD'],
@@ -21,58 +22,118 @@ class TaskController extends Controller
     ];
 
 
-    //public function index()
-    //{
-        //return response()->json(self::$tasks);
-    //}
-
     //Alteração no método index no TaskController para retornar a view tasks com os dados das tarefas.
     public function index()
     {
-        return view('tasks', ['tasks' => self::$tasks]);
+        // Recupera tarefas da sessão ou usa o array estático se a sessão estiver vazia.
+        $tasks = Session::get('tasks', self::$tasks);
+        return view('tasks.index', ['tasks' => $tasks]);
     }
 
+    public function create()
+    {
+        // Exibe a view para criar uma nova tarefa.
+        return view('tasks.create');
+    }
 
     public function store(Request $request)
     {
-        $newTask = [
-            'id' => end(self::$tasks)['id'] + 1, // Pega o id do último item e adiciona 1
-            'name' => $request->name,
+        // Recupera tarefas da sessão ou usa o array estático se a sessão estiver vazia.
+        $tasks = Session::get('tasks', self::$tasks);
+        $newId = end($tasks)['id'] + 1; // Calcula o próximo ID.
+
+        // Adiciona a nova tarefa ao array.
+        $tasks[] = [
+            'id' => $newId,
+            'Tarefa' => $request->input('Tarefa'),
         ];
-        self::$tasks[] = $newTask;
-        return response()->json($newTask, 201);
+
+        // Atualiza a sessão com o novo conjunto de tarefas.
+        Session::put('tasks', $tasks);
+
+        // Redireciona para a página de listagem de tarefas.
+        return redirect('/tarefas');
     }
 
     public function show($id)
     {
-        foreach (self::$tasks as $task) {
-            if ($task['id'] == $id) {
-                return response()->json($task);
-            }
+        // Recupera tarefas da sessão.
+        $tasks = Session::get('tasks', self::$tasks);
+        $task = $this->findTask($id, $tasks);
+
+        if ($task) {
+            // Exibe os detalhes de uma tarefa específica.
+            return view('tasks.show', ['task' => $task]);
+        } else {
+            // Retorna um erro 404 se a tarefa não for encontrada.
+            abort(404);
         }
-        return response()->json(['message' => 'Tarefa não encontrada'], 404);
+    }
+
+    public function edit($id)
+    {
+        // Recupera tarefas da sessão.
+        $tasks = Session::get('tasks', self::$tasks);
+        $task = $this->findTask($id, $tasks);
+
+        if ($task) {
+            // Exibe a view para editar uma tarefa existente.
+            return view('tasks.edit', ['task' => $task]);
+        } else {
+            // Retorna um erro 404 se a tarefa não for encontrada.
+            abort(404);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        foreach (self::$tasks as &$task) {
+        // Recupera tarefas da sessão.
+        $tasks = Session::get('tasks', self::$tasks);
+
+        foreach ($tasks as &$task) {
             if ($task['id'] == $id) {
-                $task['name'] = $request->name;
-                return response()->json($task);
+                // Atualiza a tarefa com os novos dados do request.
+                $task['Tarefa'] = $request->input('Tarefa');
+                break;
             }
         }
-        return response()->json(['message' => 'Tarefa não encontrada'], 404);
+
+        // Atualiza a sessão com o novo conjunto de tarefas.
+        Session::put('tasks', $tasks);
+
+        // Redireciona para a página de listagem de tarefas.
+        return redirect('/tarefas');
     }
 
     public function destroy($id)
     {
-        foreach (self::$tasks as $key => $task) {
+        // Recupera tarefas da sessão.
+        $tasks = Session::get('tasks', self::$tasks);
+
+        // Remove a tarefa do array.
+        foreach ($tasks as $key => $task) {
             if ($task['id'] == $id) {
-                unset(self::$tasks[$key]);
-                self::$tasks = array_values(self::$tasks); // Reindexa o array após a remoção
-                return response()->json(['message' => 'Registro deletado com sucesso']);
+                unset($tasks[$key]);
+                break;
             }
         }
-        return response()->json(['message' => 'Tarefa não encontrada'], 404);
+
+        // Reindexa o array e atualiza a sessão.
+        $tasks = array_values($tasks);
+        Session::put('tasks', $tasks);
+
+        // Redireciona para a página de listagem de tarefas.
+        return redirect('/tarefas');
+    }
+
+    // Método auxiliar privado para encontrar uma tarefa pelo ID.
+    private function findTask($id, $tasks)
+    {
+        foreach ($tasks as $task) {
+            if ($task['id'] == $id) {
+                return $task;
+            }
+        }
+        return null;
     }
 }
